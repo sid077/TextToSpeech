@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.craft.texttospeech.R;
+import com.craft.texttospeech.viewmodel.ViewModelMain;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentification;
 
@@ -33,7 +34,7 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        List<String> langNames = new ArrayList<>();
+        final List<String> langNames = new ArrayList<>();
         langNames.add("English");
         langNames.add("Japanese");
         langNames.add("Hindi");
@@ -42,7 +43,9 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                TextToSpeechActivity activity = (TextToSpeechActivity) getActivity();
+                ViewModelMain viewModelMain = (ViewModelMain) activity.viewModel;
+                viewModelMain.getLanguageLiveData().setValue(langNames.get(position));
             }
         });
 

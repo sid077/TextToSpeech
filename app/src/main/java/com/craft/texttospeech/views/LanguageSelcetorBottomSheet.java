@@ -22,6 +22,7 @@ import java.util.List;
 public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     ListView listView ;
     ArrayAdapter<String> adapter;
+    TextToSpeechActivity activity;
 
     @Nullable
     @Override
@@ -34,18 +35,21 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        final List<String> langNames = new ArrayList<>();
-        langNames.add("English");
-        langNames.add("Japanese");
-        langNames.add("Hindi");
+
+        activity = (TextToSpeechActivity) getActivity();
+        final List<String> langNames = activity.languageNames;
+
         adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextToSpeechActivity activity = (TextToSpeechActivity) getActivity();
-                ViewModelMain viewModelMain = (ViewModelMain) activity.viewModel;
-                viewModelMain.getLanguageLiveData().setValue(langNames.get(position));
+
+                activity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
+                dismiss();
             }
         });
 

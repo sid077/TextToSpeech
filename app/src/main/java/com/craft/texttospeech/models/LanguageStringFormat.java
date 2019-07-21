@@ -1,5 +1,7 @@
 package com.craft.texttospeech.models;
 
+import androidx.annotation.Nullable;
+
 public class LanguageStringFormat {
     private String name;
 
@@ -20,4 +22,10 @@ public class LanguageStringFormat {
     }
 
     private String code;
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+
+        return super.equals(obj);
+    }
 }

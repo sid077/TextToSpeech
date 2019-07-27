@@ -23,6 +23,7 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     ListView listView ;
     ArrayAdapter<String> adapter;
     TextToSpeechActivity activity;
+    LanguageConverterActivity converterActivity;
 
     @Nullable
     @Override
@@ -36,22 +37,42 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     public void onStart() {
         super.onStart();
 
-        activity = (TextToSpeechActivity) getActivity();
-        final List<String> langNames = activity.languageNames;
+        try {
+            activity = (TextToSpeechActivity) getActivity();
+            final List<String> langNames = activity.languageNames;
 
-        adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 
 
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                activity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
-                dismiss();
-            }
-        });
+                    activity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
+                    dismiss();
+                }
+            });
+        }
+        catch (ClassCastException e){
+            converterActivity = (LanguageConverterActivity) getActivity();
+            final List<String> langNames = converterActivity.languageNames;
+
+            adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                    converterActivity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
+                    dismiss();
+                }
+            });
+        }
 
 
     }

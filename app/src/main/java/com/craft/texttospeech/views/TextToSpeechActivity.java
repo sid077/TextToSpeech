@@ -2,16 +2,12 @@ package com.craft.texttospeech.views;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.app.Dialog;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.Voice;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -31,14 +27,15 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage;
 import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentification;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Locale;
 
 public class TextToSpeechActivity extends AppCompatActivity {
         TextToSpeech textToSpeech;
-        FloatingActionButton playFab,langFab;
+        FloatingActionButton playFab,langFab, saveVoiceFab;
         EditText editText;
+        MainActivity mainActivity;
         ViewModelMain viewModel;
          ArrayList<String> languageNames = new ArrayList<>();
     private Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
@@ -56,9 +53,13 @@ public class TextToSpeechActivity extends AppCompatActivity {
         langFab = findViewById(R.id.floatingActionButtonLanguage);
         seekBarSpeed = findViewById(R.id.seekBarSpeed);
         seekBarPitch = findViewById(R.id.seekBarPitch);
+        saveVoiceFab = findViewById(R.id.floatingActionButtonDownload);
+
+        mainActivity = (MainActivity) this.getParent();
 
 
-        viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
+
+        viewModel =ViewModelProviders.of(this).get(ViewModelMain.class);
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -201,6 +202,21 @@ public class TextToSpeechActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+        saveVoiceFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                File root = android.os.Environment.getExternalStorageDirectory();
+                File dir = new File(root.getAbsolutePath()+"/downloads");
+                if(!dir.exists()){
+                    dir.mkdir();
+                }
+                File file = new File(dir, System.currentTimeMillis()+".mp3");
+                int test = textToSpeech.synthesizeToFile( editText.getText().toString(),null,file,"tts");
+                Log.i("voice saving",String.valueOf(test));
+                Toast.makeText(getApplicationContext(),"Audio saved!",Toast.LENGTH_SHORT).show();
             }
         });
 

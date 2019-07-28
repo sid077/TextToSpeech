@@ -6,7 +6,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,10 +28,13 @@ import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentif
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class TextToSpeechActivity extends AppCompatActivity {
-        TextToSpeech textToSpeech;
+    String selectedLangCode;
+    TextToSpeech textToSpeech;
         FloatingActionButton playFab,langFab, saveVoiceFab;
         EditText editText;
         MainActivity mainActivity;
@@ -40,7 +42,6 @@ public class TextToSpeechActivity extends AppCompatActivity {
          ArrayList<String> languageNames = new ArrayList<>();
     private Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
     private ArrayList<LanguageStringFormat> languageAndCode;
-    private String selectedLang;
     private SeekBar seekBarSpeed,seekBarPitch;
 
     @Override
@@ -63,13 +64,13 @@ public class TextToSpeechActivity extends AppCompatActivity {
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
-                selectedLang = s;
+                selectedLangCode = s;
                 textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
                     @Override
                     public void onInit(int status) {
                         if (status == TextToSpeech.SUCCESS){
 
-                            int tts = textToSpeech.setLanguage(new Locale(selectedLang));
+                            int tts = textToSpeech.setLanguage(new Locale(selectedLangCode));
                             if(tts == TextToSpeech.LANG_MISSING_DATA||tts == TextToSpeech.LANG_NOT_SUPPORTED){
                                 Log.i("intitialised","Lang error");
                             }
@@ -90,10 +91,15 @@ public class TextToSpeechActivity extends AppCompatActivity {
             public void onChanged(ArrayList<LanguageStringFormat> languageStringFormats) {
                 languageAndCode = languageStringFormats;
                 languageNames = new ArrayList<>();
+                Map<String,String> map = new HashMap<>();
+
                 for(int i=0; i<languageStringFormats.size();i++){
                     languageNames.add(languageStringFormats.get(i).getName());
+                    map.put(languageStringFormats.get(i).getName(),languageStringFormats.get(i).getCode());
+
 
                 }
+                viewModel.setMap(map);
 
 
             }

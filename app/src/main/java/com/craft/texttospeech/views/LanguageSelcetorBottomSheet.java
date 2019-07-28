@@ -24,6 +24,8 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
     ArrayAdapter<String> adapter;
     TextToSpeechActivity activity;
     LanguageConverterActivity converterActivity;
+    ViewModelMain viewModelMain;
+    private List<String> langNames;
 
     @Nullable
     @Override
@@ -39,26 +41,18 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
 
         try {
             activity = (TextToSpeechActivity) getActivity();
-            final List<String> langNames = activity.languageNames;
+            langNames = activity.languageNames;
+            viewModelMain = activity.viewModel;
 
-            adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
-            listView.setAdapter(adapter);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-
-
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                    activity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
-                    dismiss();
-                }
-            });
         }
         catch (ClassCastException e){
             converterActivity = (LanguageConverterActivity) getActivity();
-            final List<String> langNames = converterActivity.languageNames;
+            langNames = converterActivity.languageNames;
+            viewModelMain = converterActivity.viewModel;
 
+
+        }
+        finally {
             adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),R.layout.simple_list_item,langNames);
             listView.setAdapter(adapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -67,8 +61,9 @@ public class LanguageSelcetorBottomSheet extends BottomSheetDialogFragment {
 
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String langCode =  viewModelMain.getMap().get(langNames.get(position));
+                    viewModelMain.getLanguageLiveData().setValue(langCode);
 
-                    converterActivity.viewModel.getLanguageLiveData().setValue(langNames.get(position));
                     dismiss();
                 }
             });

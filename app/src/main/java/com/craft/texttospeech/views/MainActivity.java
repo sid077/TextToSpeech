@@ -15,7 +15,7 @@ import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends AppCompatActivity {
 
-    CardView cardViewTts,cardViewLc;
+    CardView cardViewTts,cardViewLc,cardViewStt;
     ViewModelMain viewModel;
 
 
@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
         cardViewLc = findViewById(R.id.cardViewLc);
         cardViewTts = findViewById(R.id.cardViewTts);
+        cardViewStt = findViewById(R.id.cardviewStt);
 
         viewModel =  ViewModelProviders.of(this).get(ViewModelMain.class);
 
@@ -41,6 +42,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),LanguageConverterActivity.class));
+            }
+        });
+        cardViewStt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),SpeechToTextActivity.class));
             }
         });
     }

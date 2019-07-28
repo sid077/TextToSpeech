@@ -35,10 +35,11 @@ public class LanguageConverterActivity extends AppCompatActivity {
     EditText editTextTranslateFrom,editTextTranslatedText;
     FloatingActionButton fabTranslateFrom,fabTranslateTo,fabDoTranslate;
     MainActivity mainActivity;
-     ViewModelMain viewModel;
-     Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
-     ArrayList<LanguageStringFormat> languageAndCode;
+    ViewModelMain viewModel;
+    Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
+    ArrayList<LanguageStringFormat> languageAndCode;
     private FirebaseTranslator translateLanguage;
+    String selectedLangCode = "en";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +74,11 @@ public class LanguageConverterActivity extends AppCompatActivity {
                             .addOnSuccessListener(new OnSuccessListener<String>() {
                                 @Override
                                 public void onSuccess(String s) {
+
                                     Log.i("language",s);
                                     FirebaseTranslatorOptions options = new FirebaseTranslatorOptions.Builder()
                                             .setSourceLanguage(FirebaseTranslateLanguage.languageForLanguageCode(s))
-                                            .setTargetLanguage(FirebaseTranslateLanguage.FR)
+                                            .setTargetLanguage(FirebaseTranslateLanguage.languageForLanguageCode(selectedLangCode))
                                             .build();
                                     translateLanguage = FirebaseNaturalLanguage.getInstance().getTranslator(options);
                                     FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder().build();
@@ -99,6 +101,13 @@ public class LanguageConverterActivity extends AppCompatActivity {
                 }
             }
         });
+        Observer<String> langObserver = new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                selectedLangCode = s;
+            }
+        };
+        viewModel.getLanguageLiveData().observe(this,langObserver);
                 editTextTranslateFrom.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

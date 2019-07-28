@@ -22,6 +22,10 @@ public class ViewModelMain extends ViewModel {
         return map;
     }
 
+    public void setMap(Map<String, String> map) {
+        this.map = map;
+    }
+
     private Map<String, String> map;
 
     public MutableLiveData<String> getLanguageLiveData() {

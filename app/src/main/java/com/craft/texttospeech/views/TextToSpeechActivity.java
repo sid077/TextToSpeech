@@ -215,7 +215,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
             public void onClick(View v)
             {
                 File root = android.os.Environment.getExternalStorageDirectory();
-                File dir = new File(root.getAbsolutePath()+"/downloads");
+                File dir = new File(root.getAbsolutePath()+"/downloads/TTS/text to speech");
                 if(!dir.exists()){
                     dir.mkdir();
                 }

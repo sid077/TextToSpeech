@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 import com.craft.texttospeech.R;
 import com.craft.texttospeech.models.LanguageStringFormat;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
+import com.craft.texttospeech.views.adapters.RecyclerViewTtsAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -31,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 public class TextToSpeechActivity extends AppCompatActivity {
     String selectedLangCode;
@@ -39,6 +43,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
         EditText editText;
         MainActivity mainActivity;
         ViewModelMain viewModel;
+        RecyclerView recyclerView;
          ArrayList<String> languageNames = new ArrayList<>();
     private Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
     private ArrayList<LanguageStringFormat> languageAndCode;
@@ -55,12 +60,13 @@ public class TextToSpeechActivity extends AppCompatActivity {
         seekBarSpeed = findViewById(R.id.seekBarSpeed);
         seekBarPitch = findViewById(R.id.seekBarPitch);
         saveVoiceFab = findViewById(R.id.floatingActionButtonDownload);
-
+        recyclerView = findViewById(R.id.recyclerViewStoredFilesTTS);
         mainActivity = (MainActivity) this.getParent();
 
 
 
         viewModel =ViewModelProviders.of(this).get(ViewModelMain.class);
+        viewModel.fetchTTSStoredFile(this);
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -105,6 +111,14 @@ public class TextToSpeechActivity extends AppCompatActivity {
             }
         };
         viewModel.getLanguageAndCodeliveData().observe(this, langAndCodeObserver);
+        Observer<Map<String,String>> storedFiles = new Observer<Map<String, String>>() {
+            @Override
+            public void onChanged(Map<String, String> stringStringMap) {
+                recyclerView.setAdapter(new RecyclerViewTtsAdapter(stringStringMap,getApplicationContext()));
+                recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),RecyclerView.HORIZONTAL,false));
+            }
+        };
+        viewModel.getStoredTTSData().observe(this,storedFiles);
 
 
 
@@ -219,7 +233,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
                 if(!dir.exists()){
                     dir.mkdir();
                 }
-                File file = new File(dir, System.currentTimeMillis()+".mp3");
+                File file = new File(dir, new Random().nextInt() +".mp3");
                 int test = textToSpeech.synthesizeToFile( editText.getText().toString(),null,file,"tts");
                 Log.i("voice saving",String.valueOf(test));
                 Toast.makeText(getApplicationContext(),"Audio saved!",Toast.LENGTH_SHORT).show();

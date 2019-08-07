@@ -1,6 +1,8 @@
 package com.craft.texttospeech.views.adapters;
 
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,17 +13,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.craft.texttospeech.R;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewSttAdapter.ViewHolder> {
+public class RecyclerViewTtsAdapter extends RecyclerView.Adapter<RecyclerViewTtsAdapter.ViewHolder> {
 
-    List<String> data ;
-   Context context;
+    Map<String ,String> data;
+    Context context;
+    private final ArrayList<String> fileNames;
 
-    public RecyclerViewSttAdapter(List<String> data, Context context) {
+    public RecyclerViewTtsAdapter(Map<String,String> data, Context context) {
         this.data = data;
         this.context = context;
+        fileNames = new ArrayList<>();
+        for (String s: data.keySet()){
+            fileNames.add(s);
+        }
+
     }
 
     @NonNull
@@ -32,8 +43,22 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.textView.setText(data.get(position));
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
+        holder.textView.setText(fileNames.get(position));
+        holder.textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(data.get(fileNames.get(position)));
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
     }
 
     @Override

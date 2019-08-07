@@ -3,6 +3,8 @@ package com.craft.texttospeech.views;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,13 +15,16 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.craft.texttospeech.R;
 import com.craft.texttospeech.models.LanguageStringFormat;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
+import com.craft.texttospeech.views.adapters.RecyclerViewSttAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
@@ -35,31 +40,16 @@ import java.util.Locale;
 import java.util.Map;
 
 public class SpeechToTextActivity extends AppCompatActivity {
-    public List<String> languageNames;
-    public ViewModelMain viewModel;
+    List<String> languageNames;
+    ViewModelMain viewModel;
+    RecyclerView recyclerViewStoredSTTData;
     EditText editTextStt;
         FloatingActionButton fabStart,fabSelectLang,fabPlay,fabSave;
         String selectedLangCode ="en";
     private ArrayList<LanguageStringFormat> languageAndCode;
     private TextToSpeech textToSpeech;
     static {
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File(root.getAbsolutePath()+"/downloads/TTS/speech to text");
-        ArrayList<String> fileContents = new ArrayList<>();
-        if(dir.exists())
-        {
-            File [] files = dir.listFiles();
-            for(int i=0;i<files.length;i++){
-                try {
-                    FileInputStream inputStream = new FileInputStream(files[i]);
-                    inputStream.read(files[i].length())
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
 
-            }
-
-        }
 
 
 
@@ -72,7 +62,10 @@ public class SpeechToTextActivity extends AppCompatActivity {
         setContentView(R.layout.activity_speech_to_text);
         intialiseView();
 
+
+
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
+        viewModel.getSTTStoredFile(this);
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -92,10 +85,21 @@ public class SpeechToTextActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+
 //                langFab.setImageResource(R.drawable.common_google_signin_btn_icon_dark);
 //                Toast.makeText(getApplicationContext(),"language changed",Toast.LENGTH_LONG).show();
             }
         } ;
+        final Observer<List<String>> storedSTTDataObserver = new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> strings) {
+            recyclerViewStoredSTTData.setAdapter(new RecyclerViewSttAdapter(strings,getApplicationContext()));
+            recyclerViewStoredSTTData.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+
+            }
+        };
+        viewModel.getStoredSTTData().observe(this,storedSTTDataObserver);
         viewModel.getLanguageLiveData().observe(this,langObserver);
         viewModel.fetchLanguages();
        Observer langAndCodeObserver = new Observer<ArrayList<LanguageStringFormat>>() {
@@ -231,6 +235,7 @@ public class SpeechToTextActivity extends AppCompatActivity {
         fabStart = findViewById(R.id.floatingActionButtonStart);
         fabPlay = findViewById(R.id.floatingActionButtonPlayStt);
         fabSave = findViewById(R.id.floatingActionButtonSaveStt);
+        recyclerViewStoredSTTData = findViewById(R.id.recyclerViewStoredSttData);
 
     }
 

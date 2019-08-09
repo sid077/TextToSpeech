@@ -2,6 +2,7 @@ package com.craft.texttospeech.views;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -16,6 +17,7 @@ import com.google.firebase.FirebaseApp;
 public class MainActivity extends AppCompatActivity {
 
     CardView cardViewTts,cardViewLc,cardViewStt;
+    ConstraintLayout constraintLayoutTts,constraintLayoutLc,constraintLayoutStt;
     ViewModelMain viewModel;
 
 
@@ -26,25 +28,25 @@ public class MainActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
 
 
-        cardViewLc = findViewById(R.id.cardViewLc);
-        cardViewTts = findViewById(R.id.cardViewTts);
-        cardViewStt = findViewById(R.id.cardviewStt);
+        constraintLayoutStt = findViewById(R.id.constrainLayoutSTT);
+        constraintLayoutTts = findViewById(R.id.constrainLayoutTTS);
+        constraintLayoutLc = findViewById(R.id.constrainLayoutLC);
 
         viewModel =  ViewModelProviders.of(this).get(ViewModelMain.class);
 
-        cardViewTts.setOnClickListener(new View.OnClickListener() {
+        constraintLayoutTts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),TextToSpeechActivity.class));
             }
         });
-        cardViewLc.setOnClickListener(new View.OnClickListener() {
+        constraintLayoutLc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),LanguageConverterActivity.class));
             }
         });
-        cardViewStt.setOnClickListener(new View.OnClickListener() {
+        constraintLayoutStt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),SpeechToTextActivity.class));

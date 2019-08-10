@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class TextToSpeechActivity extends AppCompatActivity {
+    private static final String TAG = "TEXTTOSPEECHACT";
     String selectedLangCode;
     TextToSpeech textToSpeech;
         FloatingActionButton playFab,langFab, saveVoiceFab;
@@ -54,17 +57,11 @@ public class TextToSpeechActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_text_to_speech);
-        playFab = findViewById(R.id.floatingActionButtonPlay);
-        editText = findViewById(R.id.editTextTTS);
-        langFab = findViewById(R.id.floatingActionButtonLanguage);
-        seekBarSpeed = findViewById(R.id.seekBarSpeed);
-        seekBarPitch = findViewById(R.id.seekBarPitch);
-        saveVoiceFab = findViewById(R.id.floatingActionButtonDownload);
-        recyclerView = findViewById(R.id.recyclerViewStoredFilesTTS);
-        mainActivity = (MainActivity) this.getParent();
+        intialiseView();
 
 
-
+        seekBarPitch.setEnabled(false);
+        seekBarSpeed.setEnabled(false);
         viewModel =ViewModelProviders.of(this).get(ViewModelMain.class);
         viewModel.fetchTTSStoredFile(this);
         final Observer<String> langObserver = new Observer<String>() {
@@ -75,7 +72,8 @@ public class TextToSpeechActivity extends AppCompatActivity {
                     @Override
                     public void onInit(int status) {
                         if (status == TextToSpeech.SUCCESS){
-
+                            seekBarPitch.setEnabled(true);
+                            seekBarSpeed.setEnabled(true);
                             int tts = textToSpeech.setLanguage(new Locale(selectedLangCode));
                             if(tts == TextToSpeech.LANG_MISSING_DATA||tts == TextToSpeech.LANG_NOT_SUPPORTED){
                                 Log.i("intitialised","Lang error");
@@ -86,8 +84,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
                         }
                     }
                 });
-                langFab.setImageResource(R.drawable.common_google_signin_btn_icon_dark);
-                Toast.makeText(getApplicationContext(),"language changed",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"Language changed",Toast.LENGTH_LONG).show();
             }
         } ;
         viewModel.getLanguageLiveData().observe(this,langObserver);
@@ -123,33 +120,26 @@ public class TextToSpeechActivity extends AppCompatActivity {
 
 
 
-//        FirebaseLanguageIdentification languageIdentification = FirebaseNaturalLanguage.getInstance().getLanguageIdentification();
-//        languageIdentification.identifyLanguage(editText.getText().toString())
-//                .addOnSuccessListener(new OnSuccessListener<String>() {
-//                    @Override
-//                    public void onSuccess(String s) {
-//                        Log.i("language",s);
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.i("language","failed to identify");
-//                    }
-//                });
-
-
-
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_DONE){
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(textToSpeech==null) {
                     FirebaseLanguageIdentification languageIdentification = FirebaseNaturalLanguage.getInstance().getLanguageIdentification();
                     languageIdentification.identifyLanguage(editText.getText().toString())
                             .addOnSuccessListener(new OnSuccessListener<String>() {
                                 @Override
                                 public void onSuccess(String s) {
-                                    Log.i("language",s);
+                                    Log.i("language", s);
                                     viewModel.getLanguageLiveData().setValue(s);
 
                                 }
@@ -157,18 +147,20 @@ public class TextToSpeechActivity extends AppCompatActivity {
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-                                    Log.i("language","failed to identify");
+                                    Log.i("language", "failed to identify");
                                 }
                             });
                 }
-            return false;
             }
         });
 
         playFab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) { ;
-
+            public void onClick(View v) {
+               if(editText.getText().toString().isEmpty()){
+                   Toast.makeText(getApplicationContext(),"Please enter some text!",Toast.LENGTH_SHORT).show();
+                   return;
+               }
 
                int ttsSpeak = textToSpeech.speak(editText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
 
@@ -228,6 +220,10 @@ public class TextToSpeechActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
+                if(editText.getText().toString().isEmpty()){
+                    Toast.makeText(getApplicationContext(),"Please enter some text!",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 File root = android.os.Environment.getExternalStorageDirectory();
                 File dir = new File(root.getAbsolutePath()+"/downloads/TTS/text to speech");
                 if(!dir.exists()){
@@ -240,6 +236,24 @@ public class TextToSpeechActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: keyboard");
+        super.onBackPressed();
+    }
+
+    private void intialiseView() {
+        playFab = findViewById(R.id.floatingActionButtonPlay);
+        editText = findViewById(R.id.editTextTTS);
+        langFab = findViewById(R.id.floatingActionButtonLanguage);
+        seekBarSpeed = findViewById(R.id.seekBarSpeed);
+        seekBarPitch = findViewById(R.id.seekBarPitch);
+        saveVoiceFab = findViewById(R.id.floatingActionButtonDownload);
+        recyclerView = findViewById(R.id.recyclerViewStoredFilesTTS);
+        mainActivity = (MainActivity) this.getParent();
 
     }
 }

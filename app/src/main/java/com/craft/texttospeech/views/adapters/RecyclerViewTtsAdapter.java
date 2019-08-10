@@ -38,7 +38,7 @@ public class RecyclerViewTtsAdapter extends RecyclerView.Adapter<RecyclerViewTts
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.recycler_view_stored_stt_data_raw,parent,false);
+        View view = LayoutInflater.from(context).inflate(R.layout.recycler_view_stored_tts_data_raw,parent,false);
         return new ViewHolder(view);
     }
 
@@ -73,7 +73,7 @@ public class RecyclerViewTtsAdapter extends RecyclerView.Adapter<RecyclerViewTts
         TextView textView ;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.textViewSttStoredData);
+            textView = itemView.findViewById(R.id.textViewTtsStoredData);
 
         }
     }

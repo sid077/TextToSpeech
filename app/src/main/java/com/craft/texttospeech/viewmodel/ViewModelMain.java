@@ -30,6 +30,15 @@ public class ViewModelMain extends ViewModel {
     }
 
     private ArrayList<String> fileContentsStt;
+
+    public Map<String, String> getFileContentsTts() {
+        return fileContentsTts;
+    }
+
+    public void setFileContentsTts(Map<String, String> fileContentsTts) {
+        this.fileContentsTts = fileContentsTts;
+    }
+
     private Map<String,String> fileContentsTts;
     MutableLiveData<Map<String,String>> storedTTSData = new MutableLiveData<>();
     MutableLiveData<List<String>> storedSTTData= new MutableLiveData<>();
@@ -176,4 +185,18 @@ public class ViewModelMain extends ViewModel {
     }
 
 
+    public void deleteTTSFile(String s) {
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File(root.getAbsolutePath() + "/downloads/TTS/text to speech");
+
+        if (dir.exists()) {
+            fileContentsTts = new HashMap<>();
+            File[] files = dir.listFiles();
+            for(int i=0;i<files.length;i++){
+                if(files[i].getName().equals(s))
+                    files[i].delete();
+            }
+
+        }
+    }
 }

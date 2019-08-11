@@ -45,12 +45,19 @@ public class TextToSpeechActivity extends AppCompatActivity {
         FloatingActionButton playFab,langFab, saveVoiceFab;
         EditText editText;
         MainActivity mainActivity;
-        ViewModelMain viewModel;
+
+    public ViewModelMain getViewModel() {
+        return viewModel;
+    }
+
+    ViewModelMain viewModel;
         RecyclerView recyclerView;
          ArrayList<String> languageNames = new ArrayList<>();
     private Observer<ArrayList<LanguageStringFormat>> langAndCodeObserver;
     private ArrayList<LanguageStringFormat> languageAndCode;
     private SeekBar seekBarSpeed,seekBarPitch;
+    private TextToSpeechActivity activity = this;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,11 +114,12 @@ public class TextToSpeechActivity extends AppCompatActivity {
 
             }
         };
+
         viewModel.getLanguageAndCodeliveData().observe(this, langAndCodeObserver);
         Observer<Map<String,String>> storedFiles = new Observer<Map<String, String>>() {
             @Override
             public void onChanged(Map<String, String> stringStringMap) {
-                recyclerView.setAdapter(new RecyclerViewTtsAdapter(stringStringMap,getApplicationContext()));
+                recyclerView.setAdapter(new RecyclerViewTtsAdapter(stringStringMap,activity));
                 recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),RecyclerView.HORIZONTAL,false));
             }
         };

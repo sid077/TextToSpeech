@@ -4,6 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,6 +37,7 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.textView.setText(data.get(position));
+
     }
 
     @Override
@@ -46,9 +50,13 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView ;
+        CheckBox checkBoxPlayPause;
+        ImageButton imageButtonRemove;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textViewSttStoredData);
+
 
         }
     }

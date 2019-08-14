@@ -13,18 +13,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.craft.texttospeech.R;
+import com.craft.texttospeech.views.SpeechToTextActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewSttAdapter.ViewHolder> {
-
     List<String> data ;
    Context context;
+   SpeechToTextActivity activity;
 
-    public RecyclerViewSttAdapter(List<String> data, Context context) {
+
+    public RecyclerViewSttAdapter(List<String> data, SpeechToTextActivity activity) {
         this.data = data;
-        this.context = context;
+        this.activity = activity;
+        this.context = activity.getApplicationContext();
     }
 
     @NonNull
@@ -35,8 +38,18 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         holder.textView.setText(data.get(position));
+        holder.imageButtonRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.getViewModel().setFileContentsStt((ArrayList<String>) data);
+                activity.getViewModel().deleteSTTFile(data.get(position));
+                data.remove(data.get(position));
+                notifyDataSetChanged();
+            }
+        });
+
 
     }
 
@@ -50,12 +63,12 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView ;
-        CheckBox checkBoxPlayPause;
         ImageButton imageButtonRemove;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textViewSttStoredData);
+            imageButtonRemove = itemView.findViewById(R.id.imageButtonDeleteSttRaw);
 
 
         }

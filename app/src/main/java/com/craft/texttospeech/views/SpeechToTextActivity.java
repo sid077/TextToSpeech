@@ -41,6 +41,11 @@ import java.util.Map;
 
 public class SpeechToTextActivity extends AppCompatActivity {
     List<String> languageNames;
+
+    public ViewModelMain getViewModel() {
+        return viewModel;
+    }
+
     ViewModelMain viewModel;
     RecyclerView recyclerViewStoredSTTData;
     EditText editTextStt;
@@ -48,12 +53,8 @@ public class SpeechToTextActivity extends AppCompatActivity {
         String selectedLangCode ="en";
     private ArrayList<LanguageStringFormat> languageAndCode;
     private TextToSpeech textToSpeech;
-    static {
-
-
-
-
-    }
+    private boolean isLangFetched;
+    private SpeechToTextActivity activity = this;
 
 
     @Override
@@ -63,8 +64,8 @@ public class SpeechToTextActivity extends AppCompatActivity {
         intialiseView();
 
 
-
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
+        viewModel.fetchLanguages();
         viewModel.getSTTStoredFile(this);
         final Observer<String> langObserver = new Observer<String>() {
             @Override
@@ -94,14 +95,14 @@ public class SpeechToTextActivity extends AppCompatActivity {
         final Observer<List<String>> storedSTTDataObserver = new Observer<List<String>>() {
             @Override
             public void onChanged(List<String> strings) {
-            recyclerViewStoredSTTData.setAdapter(new RecyclerViewSttAdapter(strings,getApplicationContext()));
+            isLangFetched=true;
+            recyclerViewStoredSTTData.setAdapter(new RecyclerViewSttAdapter(strings,activity));
             recyclerViewStoredSTTData.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
 
             }
         };
         viewModel.getStoredSTTData().observe(this,storedSTTDataObserver);
         viewModel.getLanguageLiveData().observe(this,langObserver);
-        viewModel.fetchLanguages();
        Observer langAndCodeObserver = new Observer<ArrayList<LanguageStringFormat>>() {
             @Override
             public void onChanged(ArrayList<LanguageStringFormat> languageStringFormats) {
@@ -126,6 +127,7 @@ public class SpeechToTextActivity extends AppCompatActivity {
         fabStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, new Locale(selectedLangCode));
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"com.craft.texttospeech");
@@ -193,13 +195,20 @@ public class SpeechToTextActivity extends AppCompatActivity {
         fabSelectLang.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!isLangFetched){
+                    Toast.makeText(getApplicationContext(),"Please wait while we fetch available languages!",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 new LanguageSelectorForSttBottomSheet().show(getSupportFragmentManager(),"STT");
             }
         });
         fabPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if(editTextStt.getText().toString().isEmpty()){
+                    Toast.makeText(getApplicationContext(),"Oops,It seems like you spoke nothing",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 textToSpeech.speak(editTextStt.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
 
             }
@@ -207,6 +216,10 @@ public class SpeechToTextActivity extends AppCompatActivity {
         fabSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(editTextStt.getText().toString().isEmpty()){
+                    Toast.makeText(getApplicationContext(),"Oops,It seems like you spoke nothing",Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 File root = android.os.Environment.getExternalStorageDirectory();
                 File dir = new File(root.getAbsoluteFile()+"/downloads/TTS/speech to text");
                 if(!dir.exists()){

@@ -199,4 +199,26 @@ public class ViewModelMain extends ViewModel {
 
         }
     }
+
+    public void setFileContentsStt(ArrayList<String> data) {
+        this.fileContentsStt=data;
+    }
+
+    public void deleteSTTFile(String s) {
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File(root.getAbsolutePath() + "/downloads/TTS/speech to text");
+
+        if (dir.exists()) {
+            fileContentsStt = new ArrayList<>();
+            File[] files = dir.listFiles();
+            for(int i=0;i<files.length;i++){
+                if(files[i].getName().equals(s))
+                    files[i].delete();
+            }
+
+
+        }
+
+
+    }
 }

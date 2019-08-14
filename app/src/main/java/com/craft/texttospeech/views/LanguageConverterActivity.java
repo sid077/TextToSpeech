@@ -50,6 +50,9 @@ public class LanguageConverterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language_converter);
         initialiseView();
+
+        editTextTranslateFrom.clearFocus();
+        editTextTranslatedText.clearFocus();
         getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         fabDoTranslate.setEnabled(false);
         mainActivity = (MainActivity) this.getParent();

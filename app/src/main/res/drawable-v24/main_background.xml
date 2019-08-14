@@ -14,7 +14,7 @@
                 <size
                     android:width="150dp"
                     android:height="150dp"/>
-                <solid android:color="#ff6d00" />
+                <solid android:color="@color/colorAccent" />
                 <corners android:bottomLeftRadius="32dp"
                     android:bottomRightRadius="32dp"
                     android:topLeftRadius="0.1dp"

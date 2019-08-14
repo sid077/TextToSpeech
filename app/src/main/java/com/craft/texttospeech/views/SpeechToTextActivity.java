@@ -63,7 +63,8 @@ public class SpeechToTextActivity extends AppCompatActivity {
         setContentView(R.layout.activity_speech_to_text);
         intialiseView();
 
-
+       // editTextStt.clearFocus();
+        editTextStt.requestFocus(View.FOCUS_DOWN);
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
         viewModel.fetchLanguages();
         viewModel.getSTTStoredFile(this);
@@ -238,6 +239,8 @@ public class SpeechToTextActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                viewModel.getSTTStoredFile(activity);
+
 
             }
         });

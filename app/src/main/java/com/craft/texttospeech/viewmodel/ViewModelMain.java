@@ -212,8 +212,21 @@ public class ViewModelMain extends ViewModel {
             fileContentsStt = new ArrayList<>();
             File[] files = dir.listFiles();
             for(int i=0;i<files.length;i++){
-                if(files[i].getName().equals(s))
-                    files[i].delete();
+                try {
+                    FileInputStream inputStream = new FileInputStream(files[i]);
+                    int length = (int) files[i].length();
+                    byte[] bytes = new byte[length];
+                    inputStream.read(bytes);
+                    Log.i("data",new String(bytes));
+                   if(s.equals(new String(bytes)))
+                       files[i].delete();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
 
 

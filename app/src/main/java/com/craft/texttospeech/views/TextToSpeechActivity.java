@@ -66,7 +66,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
         setContentView(R.layout.activity_text_to_speech);
         intialiseView();
 
-
+        editText.clearFocus();
         seekBarPitch.setEnabled(false);
         seekBarSpeed.setEnabled(false);
         viewModel =ViewModelProviders.of(this).get(ViewModelMain.class);
@@ -241,6 +241,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
                 int test = textToSpeech.synthesizeToFile( editText.getText().toString(),null,file,"tts");
                 Log.i("voice saving",String.valueOf(test));
                 Toast.makeText(getApplicationContext(),"Audio saved!",Toast.LENGTH_SHORT).show();
+                viewModel.fetchTTSStoredFile(activity);
             }
         });
 

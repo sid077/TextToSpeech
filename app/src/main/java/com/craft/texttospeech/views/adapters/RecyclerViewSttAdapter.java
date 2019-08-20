@@ -1,6 +1,8 @@
 package com.craft.texttospeech.views.adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.craft.texttospeech.R;
@@ -38,7 +41,7 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         holder.textView.setText(data.get(position));
         holder.imageButtonRemove.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,6 +52,18 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
                 notifyDataSetChanged();
             }
         });
+        holder.cardViewStt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent inten= new Intent();
+               // inten.putExtra("Contents:",holder.textView.getText());
+                inten.putExtra(Intent.EXTRA_TEXT,holder.textView.getText().toString());
+                inten.setType("text/plain");
+                Intent.createChooser(inten,"Choose one...");
+                context.startActivity(inten);
+            }
+        });
+
 
 
     }
@@ -64,11 +79,13 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView ;
         ImageButton imageButtonRemove;
+        CardView cardViewStt;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textViewSttStoredData);
             imageButtonRemove = itemView.findViewById(R.id.imageButtonDeleteSttRaw);
+            cardViewStt = itemView.findViewById(R.id.cardviewSttRaw);
 
 
         }

@@ -109,7 +109,8 @@ public class ViewModelMain extends ViewModel {
                 fileContentsStt = new ArrayList<>();
                 if(dir.exists()){
                     File [] files = dir.listFiles();
-
+                    if (files == null)
+                        return;
                     for(int i=0;i<files.length;i++){
                         try {
                             FileInputStream inputStream = new FileInputStream(files[i]);

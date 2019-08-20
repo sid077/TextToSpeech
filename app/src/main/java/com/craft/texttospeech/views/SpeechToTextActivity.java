@@ -244,6 +244,8 @@ public class SpeechToTextActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
     void intialiseView(){
         editTextStt = findViewById(R.id.editTextStt);

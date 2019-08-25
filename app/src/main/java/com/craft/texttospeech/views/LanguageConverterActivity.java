@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -53,7 +54,7 @@ public class LanguageConverterActivity extends AppCompatActivity {
 
         editTextTranslateFrom.clearFocus();
         editTextTranslatedText.clearFocus();
-        getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+       // getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         fabDoTranslate.setEnabled(false);
         mainActivity = (MainActivity) this.getParent();
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
@@ -171,7 +172,7 @@ public class LanguageConverterActivity extends AppCompatActivity {
                         translateLanguage = FirebaseNaturalLanguage.getInstance().getTranslator(options);
                         FirebaseModelDownloadConditions conditions = new FirebaseModelDownloadConditions.Builder().build();
 
-                        translateLanguage.downloadModelIfNeeded(conditions).addOnSuccessListener(new OnSuccessListener<Void>() {
+                       if(!translateLanguage.downloadModelIfNeeded(conditions).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Toast.makeText(getApplicationContext(),"Model downloaded,ready to Translate",Toast.LENGTH_SHORT).show();
@@ -183,8 +184,8 @@ public class LanguageConverterActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(),"Failed to download model,try changing language!",Toast.LENGTH_SHORT).show();
 
                             }
-                        })
-                        ;
+                        }).isComplete())
+                           Toast.makeText(getApplicationContext(),"Please wait while we download the model.",Toast.LENGTH_LONG).show();
 
                     }
                 })

@@ -56,6 +56,7 @@ public class RecyclerViewSttAdapter extends RecyclerView.Adapter<RecyclerViewStt
             @Override
             public void onClick(View v) {
                 Intent inten= new Intent();
+                inten.setAction(Intent.ACTION_SEND);
                // inten.putExtra("Contents:",holder.textView.getText());
                 inten.putExtra(Intent.EXTRA_TEXT,holder.textView.getText().toString());
                 inten.setType("text/plain");

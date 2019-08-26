@@ -4,19 +4,24 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.craft.texttospeech.R;
+import com.craft.texttospeech.recievers.NetworkChangeReciever;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
 import com.google.firebase.FirebaseApp;
 
@@ -25,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
     CardView cardViewTts,cardViewLc,cardViewStt;
     ConstraintLayout constraintLayoutTts,constraintLayoutLc,constraintLayoutStt;
     ViewModelMain viewModel;
+    BroadcastReceiver networkChangeReciever;
+    ClipboardManager clipboardManager;
+    static TextView textViewNoInternet;
+  static  ImageView imageViewNoInternet;
 
 
     @Override
@@ -32,10 +41,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseApp.initializeApp(this);
-
+        networkChangeReciever = new NetworkChangeReciever();
+        registerReceiver(networkChangeReciever,new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         constraintLayoutStt = findViewById(R.id.constrainLayoutSTT);
         constraintLayoutTts = findViewById(R.id.constrainLayoutTTS);
         constraintLayoutLc = findViewById(R.id.constrainLayoutLC);
+        imageViewNoInternet = findViewById(R.id.imageViewNoInternet);
+        textViewNoInternet = findViewById(R.id.textViewNoInternet);
+
+        clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
+            @Override
+            public void onPrimaryClipChanged() {
+
+            }
+        });
 
         viewModel =  ViewModelProviders.of(this).get(ViewModelMain.class);
 
@@ -57,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(),SpeechToTextActivity.class));
             }
         });
+
     }
     public void checkNetworkConnection(){
         AlertDialog.Builder builder =new AlertDialog.Builder(this);
@@ -97,4 +118,21 @@ public class MainActivity extends AppCompatActivity {
         isNetworkConnectionAvailable();
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(networkChangeReciever);
+    }
+    public static void setVisibility(boolean b){
+        if(b) {
+            textViewNoInternet.setVisibility(View.VISIBLE);
+            imageViewNoInternet.setVisibility(View.VISIBLE);
+        }
+        else {
+            textViewNoInternet.setVisibility(View.GONE);
+            imageViewNoInternet.setVisibility(View.GONE);
+        }
+    }
+
 }

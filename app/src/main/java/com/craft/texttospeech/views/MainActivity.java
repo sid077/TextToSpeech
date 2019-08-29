@@ -14,15 +14,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.craft.texttospeech.R;
 import com.craft.texttospeech.recievers.NetworkChangeReciever;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
+import com.craft.texttospeech.views.services.TTSService;
 import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ClipboardManager clipboardManager;
     static TextView textViewNoInternet;
   static  ImageView imageViewNoInternet;
+  Switch switchTTSService;
 
 
     @Override
@@ -48,12 +55,25 @@ public class MainActivity extends AppCompatActivity {
         constraintLayoutLc = findViewById(R.id.constrainLayoutLC);
         imageViewNoInternet = findViewById(R.id.imageViewNoInternet);
         textViewNoInternet = findViewById(R.id.textViewNoInternet);
+        switchTTSService = findViewById(R.id.switchTTSService);
 
         clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
             @Override
             public void onPrimaryClipChanged() {
 
+            }
+        });
+
+        switchTTSService.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+              askForSystemOverlayPermission();
+                Intent intent = new Intent(getApplicationContext(), TTSService.class);
+                if(isChecked)
+                {
+                    startService(intent);
+                }
             }
         });
 
@@ -128,11 +148,38 @@ public class MainActivity extends AppCompatActivity {
         if(b) {
             textViewNoInternet.setVisibility(View.VISIBLE);
             imageViewNoInternet.setVisibility(View.VISIBLE);
+            textViewNoInternet.setText("Its seems,there's no Internet.");
+
         }
         else {
             textViewNoInternet.setVisibility(View.GONE);
             imageViewNoInternet.setVisibility(View.GONE);
         }
     }
+    private void askForSystemOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
 
+            //If the draw over permission is not available open the settings screen
+            //to grant the permission.
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, 1);
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 1:{
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (!Settings.canDrawOverlays(this)) {
+                        //Permission is not available. Display error text.
+                        finish();
+                    }
+                }
+
+            }
+        }
+    }
 }

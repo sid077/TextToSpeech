@@ -14,11 +14,9 @@ public class NetworkChangeReciever extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if(!isOnline(context)){
             MainActivity.setVisibility(true);
-            Toast.makeText(context,"Network disconnected.",Toast.LENGTH_LONG).show();
         }
         else {
             MainActivity.setVisibility(false);
-            Toast.makeText(context,"You are good to go.",Toast.LENGTH_LONG).show();
 
 
         }

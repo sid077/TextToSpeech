@@ -72,7 +72,15 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), TTSService.class);
                 if(isChecked)
                 {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent);
+                            return;
+                        }
+
                     startService(intent);
+                }
+                else {
+                    stopService(intent);
                 }
             }
         });

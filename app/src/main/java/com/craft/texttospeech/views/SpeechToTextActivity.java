@@ -64,7 +64,7 @@ public class SpeechToTextActivity extends AppCompatActivity {
         intialiseView();
 
        // editTextStt.clearFocus();
-        editTextStt.requestFocus(View.FOCUS_DOWN);
+        //editTextStt.requestFocus(View.FOCUS_DOWN);
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
         viewModel.fetchLanguages();
         viewModel.getSTTStoredFile(this);

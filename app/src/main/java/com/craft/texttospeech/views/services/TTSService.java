@@ -45,12 +45,107 @@ public class TTSService extends Service {
     Intent mIntent;
     int mstartId;
     int mflags;
+    private String text;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mflags = flags;
         mIntent = intent;
         mstartId = startId;
+
+
+        text =  clipboardManager.getPrimaryClip().getItemAt(0).getText().toString();
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS){
+
+                    int tts = textToSpeech.setLanguage(new Locale("en"));
+                    if(tts == TextToSpeech.LANG_MISSING_DATA||tts == TextToSpeech.LANG_NOT_SUPPORTED){
+                        Log.i("intitialised","Lang error");
+                    }
+                    else {
+                        Log.i("Lang","supported");
+                    }
+                }
+            }
+        });
+        if(intent  !=null){
+            activity_background = intent.getBooleanExtra("activity_background",false);
+
+        }
+        if(overlayView == null) {
+            overlayView = LayoutInflater.from(this).inflate(R.layout.custom_tts_service, null);
+
+            editText = overlayView.findViewById(R.id.textViewTTSService);
+            clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
+                @Override
+                public void onPrimaryClipChanged() {
+                    if(clipboardManager.hasPrimaryClip())
+                        try {
+                            editText.setText(clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
+                        }
+                    catch (NullPointerException e){
+                            e.printStackTrace();
+                    }
+                }
+            });
+
+            WindowManager.LayoutParams params;
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
+                params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        PixelFormat.TRANSLUCENT);
+            }
+            else {
+                params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_PHONE
+                        ,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        PixelFormat.TRANSLUCENT);
+            }
+            params.gravity = Gravity.BOTTOM | Gravity.END;
+            params.x = 0;
+            params.y = 0;
+            windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            windowManager.addView(overlayView, params);
+            Display display = windowManager.getDefaultDisplay();
+            final Point size = new Point();
+            display.getSize(size);
+            imageBTNTTS = overlayView.findViewById(R.id.imageViewTTSService);
+            if (text != null)
+                editText.setText(text);
+
+            final RelativeLayout layout = (RelativeLayout) overlayView.findViewById(R.id.relativeTTS);
+            ViewTreeObserver vto = layout.getViewTreeObserver();
+            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    int width = layout.getMeasuredWidth();
+
+                    //To get the accurate middle of the screen we subtract the width of the floating widget.
+                    mWidth = size.x - width;
+
+                }
+            });
+            imageBTNTTS.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (editText.getVisibility() == View.VISIBLE) {
+                        if(editText.getText()!=null)
+                        textToSpeech.speak(editText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                        editText.setVisibility(View.GONE);
+
+                    } else {
+                        editText.setVisibility(View.VISIBLE);
+                    }
+                    Log.i("btnttsservice", "pressed");
+                }
+            });
+        }
 
         return START_STICKY;
     }
@@ -59,27 +154,28 @@ public class TTSService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i("service","created");
-
         clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
-            @Override
-            public void onPrimaryClipChanged() {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    startForegroundService(new Intent(getApplicationContext(),TTSService2.class));
-//                    return;
-//                }
-                Intent intent = new Intent(getApplicationContext(),TTSService2.class);
-                ClipData.Item item = clipboardManager.getPrimaryClip().getItemAt(0);
-                intent.putExtra("text",clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
-                startService(intent);
-            }
-        });
+
+
+//        clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
+//            @Override
+//            public void onPrimaryClipChanged() {
+////                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+////                    startForegroundService(new Intent(getApplicationContext(),TTSService2.class));
+////                    return;
+////                }
+//                Intent intent = new Intent(getApplicationContext(),TTSService2.class);
+//                ClipData.Item item = clipboardManager.getPrimaryClip().getItemAt(0);
+//                intent.putExtra("text",clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
+//                startService(intent);
+//            }
+//        });
 
 
         String name = getPackageName() ;
         String CHANNEL_ID = getPackageName();
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
 
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,name,importance);
             channel.setDescription("hello");

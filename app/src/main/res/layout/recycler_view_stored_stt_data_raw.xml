@@ -11,6 +11,7 @@
         android:layout_width="150dp"
         android:layout_height="100dp"
         android:layout_margin="8dp"
+        app:cardBackgroundColor="@color/colorAccent"
         app:cardCornerRadius="10dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,6 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:gravity="center"
+                android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -38,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:background="@color/colorPrimary"
+                android:background="@color/colorAccent"
                 android:src="@drawable/ic_delete_black_24dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

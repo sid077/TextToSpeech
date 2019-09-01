@@ -45,7 +45,7 @@ public class TTSService extends Service {
     Intent mIntent;
     int mstartId;
     int mflags;
-    private String text;
+    private String text="";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -53,8 +53,13 @@ public class TTSService extends Service {
         mIntent = intent;
         mstartId = startId;
 
-
-        text =  clipboardManager.getPrimaryClip().getItemAt(0).getText().toString();
+        clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        try {
+            text = clipboardManager.getPrimaryClip().getItemAt(0).getText().toString();
+        }
+        catch(NullPointerException e){
+            e.printStackTrace();
+        }
         textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -147,14 +152,13 @@ public class TTSService extends Service {
             });
         }
 
-        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i("service","created");
-        clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
 
 //        clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {

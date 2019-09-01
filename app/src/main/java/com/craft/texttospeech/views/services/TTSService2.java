@@ -2,6 +2,7 @@ package com.craft.texttospeech.views.services;
 
 import android.app.Service;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -49,6 +50,10 @@ public class TTSService2 extends Service {
 //
 //
 //        }
+        Intent i =new Intent();
+        i.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
+        startService(i);
+
         return super.onStartCommand(intent, flags, startId);
     }
 

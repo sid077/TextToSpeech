@@ -3,10 +3,10 @@
     package="com.craft.texttospeech">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -15,9 +15,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".views.SpeechToTextActivity"></activity>
+        <activity
+            android:name=".views.Main2Activity"
+            android:label="@string/title_activity_main2"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".views.SpeechToTextActivity" />
         <activity android:name=".views.LanguageConverterActivity" />
-        <activity android:name=".views.TextToSpeechActivity" />
+        <activity android:name=".views.TextToSpeechActivity"></activity>
         <activity android:name=".views.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,20 +33,19 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
         <receiver android:name=".recievers.NetworkChangeReciever">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <service android:name=".views.services.TTSService"
-            android:enabled="true"
-            android:exported="false">
-        </service>
-        <service android:name=".views.services.TTSService2"
-            android:enabled="true"
-            />
 
-
+        <service
+            android:name=".views.services.TTSService"
+            android:exported="true" />
+        <service
+            android:name=".views.services.TTSService2"
+            android:enabled="true" />
     </application>
 
 </manifest>

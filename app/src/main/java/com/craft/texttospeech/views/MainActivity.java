@@ -1,13 +1,19 @@
 package com.craft.texttospeech.views;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +25,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -29,9 +37,11 @@ import com.craft.texttospeech.R;
 import com.craft.texttospeech.recievers.NetworkChangeReciever;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
 import com.craft.texttospeech.views.services.TTSService;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     CardView cardViewTts,cardViewLc,cardViewStt;
     ConstraintLayout constraintLayoutTts,constraintLayoutLc,constraintLayoutStt;
@@ -41,12 +51,14 @@ public class MainActivity extends AppCompatActivity {
     static TextView textViewNoInternet;
   static  ImageView imageViewNoInternet;
   Switch switchTTSService;
+    private FloatingActionButton fabDrawer;
+    private boolean isDrawerOpen;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main2);
         FirebaseApp.initializeApp(this);
         networkChangeReciever = new NetworkChangeReciever();
         registerReceiver(networkChangeReciever,new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -56,6 +68,32 @@ public class MainActivity extends AppCompatActivity {
         imageViewNoInternet = findViewById(R.id.imageViewNoInternet);
         textViewNoInternet = findViewById(R.id.textViewNoInternet);
         switchTTSService = findViewById(R.id.switchTTSService);
+        fabDrawer = findViewById(R.id.floatingActionButtonDrawer);
+
+
+
+
+
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+
+
+        navigationView.setNavigationItemSelectedListener(this);
+
+
+        fabDrawer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isDrawerOpen){
+                    drawer.closeDrawer(GravityCompat.START);
+                    isDrawerOpen = !isDrawerOpen;
+                }
+                else {
+                    drawer.openDrawer(GravityCompat.START);
+                    isDrawerOpen = !isDrawerOpen;
+                }
+            }
+        });
 
         clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
@@ -69,9 +107,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
               askForSystemOverlayPermission();
-                Intent intent = new Intent(getApplicationContext(), TTSService.class);
+                Intent intent =new Intent();
+                intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
+
                 if(isChecked)
                 {
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             startForegroundService(intent);
                             return;
@@ -151,6 +192,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(networkChangeReciever);
+
+
+
+
     }
     public static void setVisibility(boolean b){
         if(b) {
@@ -189,5 +234,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 }

@@ -1,14 +1,20 @@
 package com.craft.texttospeech.views;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.PermissionChecker;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -57,17 +63,38 @@ public class SpeechToTextActivity extends AppCompatActivity {
     private SpeechToTextActivity activity = this;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_speech_to_text);
         intialiseView();
 
+
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS){
+
+                    int tts = textToSpeech.setLanguage(new Locale(selectedLangCode));
+                    if(tts == TextToSpeech.LANG_MISSING_DATA||tts == TextToSpeech.LANG_NOT_SUPPORTED){
+                        Log.i("intitialised","Lang error");
+                    }
+                    else {
+                        Log.i("Lang","supported");
+                    }
+                }
+            }
+        });
+
         editTextStt.clearFocus();
         //editTextStt.requestFocus(View.FOCUS_DOWN);
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
         viewModel.fetchLanguages();
-        viewModel.getSTTStoredFile(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED)
+            viewModel.getSTTStoredFile(this);
+        }
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -128,70 +155,22 @@ public class SpeechToTextActivity extends AppCompatActivity {
         fabStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, new Locale(selectedLangCode));
-                intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"com.craft.texttospeech");
-                SpeechRecognizer speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
-                RecognitionListener listener = new RecognitionListener() {
-                    @Override
-                    public void onReadyForSpeech(Bundle params) {
-                        System.out.println("ready for speech");
-                    }
-
-                    @Override
-                    public void onBeginningOfSpeech() {
-                        System.out.println("speech starting");
-                    }
-
-                    @Override
-                    public void onRmsChanged(float rmsdB) {
-
-                    }
-
-                    @Override
-                    public void onBufferReceived(byte[] buffer) {
-                        System.out.println(String.valueOf(buffer));
-                    }
-
-                    @Override
-                    public void onEndOfSpeech() {
-                        System.out.println("speech ended");
-                    }
-
-                    @Override
-                    public void onError(int error) {
-                        System.out.println("error occured");
-                    }
-
-                    @Override
-                    public void onResults(Bundle results) {
-                        ArrayList<String> voiceResults = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                        if(voiceResults == null)
-                            System.out.println("no voice results");
+                if (Build.VERSION.SDK_INT>=23) {
+                    {
+                        if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)== PackageManager.PERMISSION_GRANTED){
+                            fabStartCode();
+                        }
                         else {
-                            System.out.println("Printing matches: ");
-                            for (String match : voiceResults) {
-                                System.out.println(match);
-                            }
-                            editTextStt.setText(voiceResults.get(0));
-
+                            Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
                         }
                     }
+                    viewModel.askForRecordMicPermission(activity);
+                }
+                else{
+                  fabStartCode();
+                }
 
-                    @Override
-                    public void onPartialResults(Bundle partialResults) {
-
-                    }
-
-                    @Override
-                    public void onEvent(int eventType, Bundle params) {
-
-                    }
-                };
-                speechRecognizer.setRecognitionListener(listener);
-                speechRecognizer.startListening(intent);
-            }
+        }
         });
         fabSelectLang.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,7 +189,11 @@ public class SpeechToTextActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Oops,It seems like you spoke nothing",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                textToSpeech.speak(editTextStt.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
+                if(textToSpeech==null) {
+                    Toast.makeText(getApplicationContext(),"Please select a language!",Toast.LENGTH_SHORT).show();
+                }
+                textToSpeech.speak(editTextStt.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+
 
             }
         });
@@ -221,7 +204,7 @@ public class SpeechToTextActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Oops,It seems like you spoke nothing",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                File root = android.os.Environment.getExternalStorageDirectory();
+                File root = Environment.getExternalStorageDirectory();
                 File dir = new File(root.getAbsoluteFile()+"/downloads/TTS/speech to text");
                 if(!dir.exists()){
                     dir.mkdirs();
@@ -256,5 +239,79 @@ public class SpeechToTextActivity extends AppCompatActivity {
         recyclerViewStoredSTTData = findViewById(R.id.recyclerViewStoredSttData);
 
     }
+    private void fabStartCode(){
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, new Locale(selectedLangCode));
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "com.craft.texttospeech");
+        SpeechRecognizer speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
+        RecognitionListener listener = new RecognitionListener() {
+            @Override
+            public void onReadyForSpeech(Bundle params) {
+                System.out.println("ready for speech");
+            }
 
+            @Override
+            public void onBeginningOfSpeech() {
+                System.out.println("speech starting");
+            }
+
+            @Override
+            public void onRmsChanged(float rmsdB) {
+
+            }
+
+            @Override
+            public void onBufferReceived(byte[] buffer) {
+                System.out.println(String.valueOf(buffer));
+            }
+
+            @Override
+            public void onEndOfSpeech() {
+                System.out.println("speech ended");
+            }
+
+            @Override
+            public void onError(int error) {
+                System.out.println("error occured");
+            }
+
+            @Override
+            public void onResults(Bundle results) {
+                ArrayList<String> voiceResults = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (voiceResults == null)
+                    System.out.println("no voice results");
+                else {
+                    System.out.println("Printing matches: ");
+                    for (String match : voiceResults) {
+                        System.out.println(match);
+                    }
+                    editTextStt.setText(voiceResults.get(0));
+
+                }
+            }
+
+            @Override
+            public void onPartialResults(Bundle partialResults) {
+
+            }
+
+            @Override
+            public void onEvent(int eventType, Bundle params) {
+
+            }
+        };
+        speechRecognizer.setRecognitionListener(listener);
+        speechRecognizer.startListening(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==3){
+            if(grantResults.length>0&&grantResults[0]== PermissionChecker.PERMISSION_GRANTED){
+                fabStartCode();
+            }
+
+        }
+    }
 }

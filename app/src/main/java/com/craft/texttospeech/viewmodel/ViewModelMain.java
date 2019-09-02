@@ -1,8 +1,11 @@
 package com.craft.texttospeech.viewmodel;
 
+import android.Manifest;
+import android.app.Activity;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ViewModelMain extends ViewModel {
+    public boolean isReadWritePermissionGranted,isRecordAudioPermissionGranted;
     public MutableLiveData<Map<String, String>> getStoredTTSData() {
         return storedTTSData;
     }
@@ -152,6 +156,8 @@ public class ViewModelMain extends ViewModel {
                 if(dir.exists()){
                     fileContentsTts = new HashMap<>();
                     File [] files = dir.listFiles();
+                    if(files==null)
+                        return;
 
                     for(int i=0;i<files.length;i++){
                         fileContentsTts.put(files[i].getName(),files[i].getAbsolutePath());
@@ -199,6 +205,15 @@ public class ViewModelMain extends ViewModel {
             }
 
         }
+    }
+    public void askForReadWritePermission(Activity activity){
+        ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE},2);
+
+    }
+    public void askForRecordMicPermission(Activity activity){
+        ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.RECORD_AUDIO},3);
+
     }
 
     public void setFileContentsStt(ArrayList<String> data) {

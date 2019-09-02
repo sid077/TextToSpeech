@@ -1,15 +1,19 @@
 package com.craft.texttospeech.views;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.PermissionChecker;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchUIUtil;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -25,8 +29,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.PermissionRequest;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -38,6 +44,8 @@ import com.craft.texttospeech.viewmodel.ViewModelMain;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
+
+import java.security.Permissions;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -54,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawer;
     private View.OnClickListener listenerStt, listenerTts,listenerTranslate;
     private CompoundButton.OnCheckedChangeListener checkedChangeListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         navigationView.setNavigationItemSelectedListener(this);
-
 
         fabDrawer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,7 +119,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         constraintLayoutLc.setOnClickListener(listenerTranslate);
         constraintLayoutStt.setOnClickListener(listenerStt);
 
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                Switch smartTts = findViewById(R.id.switcht);
+                smartTts.setOnCheckedChangeListener(checkedChangeListener);
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
+
     public void checkNetworkConnection(){
         AlertDialog.Builder builder =new AlertDialog.Builder(this);
         builder.setTitle("No internet Connection");
@@ -176,13 +208,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void askForSystemOverlayPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
 
-            //If the draw over permission is not available open the settings screen
-            //to grant the permission.
+
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, 1);
         }
+
     }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case 2:
+                if(grantResults.length>0&&grantResults[0]==PermissionChecker.PERMISSION_GRANTED)
+                    viewModel.isReadWritePermissionGranted = true;
+                else
+                   viewModel.isReadWritePermissionGranted = false;
+
+                break;
+            case 3:
+                if(grantResults.length>0&&grantResults[0]==PermissionChecker.PERMISSION_GRANTED)
+                   viewModel.isRecordAudioPermissionGranted = true;
+                else
+                    viewModel.isRecordAudioPermissionGranted = false;
+
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -194,7 +248,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         //Permission is not available. Display error text.
                         finish();
                     }
+
                 }
+
 
             }
         }
@@ -225,8 +281,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(i);
                 break;
             case R.id.nav_smartTts:
-                Switch smartTts = findViewById(R.id.switcht);
-                smartTts.setOnCheckedChangeListener(checkedChangeListener);
+
 //                if(smartTts.isChecked())
 //
 //                checkedChangeListener.onCheckedChanged(smartTts,true);
@@ -241,6 +296,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return false;
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
     private void registerListener(){
         listenerTts = new View.OnClickListener() {
             @Override
@@ -266,26 +328,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         checkedChangeListener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                askForSystemOverlayPermission();
-                Intent intent =new Intent();
-                intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
-
-                if(isChecked)
-                {
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(intent);
-                        return;
-                    }
-
-                    startService(intent);
-                }
-                else {
-                    stopService(intent);
-                }
+                startTttsService(isChecked);
             }
-            };
+        };
+
         }
+        private void startTttsService(boolean isChecked){
+            askForSystemOverlayPermission();
+            final Intent intent =new Intent();
+            intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
+
+            if(intent.getComponent() == null){
+                AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());
+                dialog.setTitle("Tap ok to download the service...");
+                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+
+                    }
+                });
+                dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent1 = new Intent();
+
+                    }
+                });
+            }
+
+            if(isChecked)
+            {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent);
+                    return;
+                }
+
+                startService(intent);
+            }
+            else {
+                stopService(intent);
+            }
+        }
+
 
     }
 

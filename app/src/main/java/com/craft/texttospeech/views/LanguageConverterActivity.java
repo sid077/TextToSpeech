@@ -59,6 +59,7 @@ public class LanguageConverterActivity extends AppCompatActivity {
         mainActivity = (MainActivity) this.getParent();
         viewModel = ViewModelProviders.of(this).get(ViewModelMain.class);
 
+
         viewModel.fetchLanguages();
         langAndCodeObserver = new Observer<ArrayList<LanguageStringFormat>>() {
             @Override

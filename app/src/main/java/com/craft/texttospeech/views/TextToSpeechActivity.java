@@ -2,11 +2,15 @@ package com.craft.texttospeech.views;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.PermissionChecker;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
@@ -44,7 +48,7 @@ public class TextToSpeechActivity extends AppCompatActivity {
     TextToSpeech textToSpeech;
         FloatingActionButton playFab,langFab, saveVoiceFab;
         EditText editText;
-        MainActivity mainActivity;
+
 
     public ViewModelMain getViewModel() {
         return viewModel;
@@ -66,11 +70,17 @@ public class TextToSpeechActivity extends AppCompatActivity {
         setContentView(R.layout.activity_text_to_speech);
         intialiseView();
 
-        editText.clearFocus();
         seekBarPitch.setEnabled(false);
         seekBarSpeed.setEnabled(false);
         viewModel =ViewModelProviders.of(this).get(ViewModelMain.class);
-        viewModel.fetchTTSStoredFile(this);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED)
+            editText.clearFocus();
+            viewModel.fetchTTSStoredFile(this);
+
+        }
+
         final Observer<String> langObserver = new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -232,16 +242,24 @@ public class TextToSpeechActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Please enter some text!",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                File root = android.os.Environment.getExternalStorageDirectory();
-                File dir = new File(root.getAbsolutePath()+"/downloads/TTS/text to speech");
-                if(!dir.exists()){
-                    dir.mkdir();
+                if(Build.VERSION.SDK_INT>=23){
+                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED){
+                        saveVoiceFabCode();
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
+                        viewModel.askForReadWritePermission(activity);
+
+                    }
+                    return;
                 }
-                File file = new File(dir, new Random().nextInt() +".mp3");
-                int test = textToSpeech.synthesizeToFile( editText.getText().toString(),null,file,"tts");
-                Log.i("voice saving",String.valueOf(test));
-                Toast.makeText(getApplicationContext(),"Audio saved!",Toast.LENGTH_SHORT).show();
-                viewModel.fetchTTSStoredFile(activity);
+                saveVoiceFabCode();
+
+
+
+
+
+
             }
         });
 
@@ -262,7 +280,30 @@ public class TextToSpeechActivity extends AppCompatActivity {
         seekBarPitch = findViewById(R.id.seekBarPitch);
         saveVoiceFab = findViewById(R.id.floatingActionButtonDownload);
         recyclerView = findViewById(R.id.recyclerViewStoredFilesTTS);
-        mainActivity = (MainActivity) this.getParent();
 
+
+    }
+    private void saveVoiceFabCode(){
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File(root.getAbsolutePath() + "/downloads/TTS/text to speech");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        File file = new File(dir, new Random().nextInt() + ".mp3");
+        int test = textToSpeech.synthesizeToFile(editText.getText().toString(), null, file, "tts");
+        Log.i("voice saving", String.valueOf(test));
+        Toast.makeText(getApplicationContext(), "Audio saved!", Toast.LENGTH_SHORT).show();
+        viewModel.fetchTTSStoredFile(activity);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==2){
+            if(grantResults.length>0&&grantResults[0]== PermissionChecker.PERMISSION_GRANTED){
+                saveVoiceFabCode();
+            }
+
+        }
     }
 }

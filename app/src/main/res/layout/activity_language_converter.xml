@@ -148,7 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:ems="10"
-            android:hint="Converted text..."
+            android:hint="Translated Text..."
             android:inputType="textMultiLine"
             android:textAlignment="center" />
     </androidx.cardview.widget.CardView>

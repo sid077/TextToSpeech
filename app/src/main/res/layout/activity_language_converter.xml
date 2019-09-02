@@ -33,7 +33,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:ems="10"
-                android:hint="paste your text here"
+                android:hint="Paste your text here..."
                 android:inputType="textMultiLine"
                 android:minWidth="250dp"
                 android:textAlignment="center" />
@@ -148,7 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:ems="10"
-            android:hint="converted text"
+            android:hint="Converted text..."
             android:inputType="textMultiLine"
             android:textAlignment="center" />
     </androidx.cardview.widget.CardView>

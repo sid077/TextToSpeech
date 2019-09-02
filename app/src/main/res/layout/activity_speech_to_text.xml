@@ -36,8 +36,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:ems="10"
-                android:hint="Tap mic tp speak something..."
-                android:inputType="textPersonName"
+                android:hint="Tap mic to speak something..."
+                android:inputType="textMultiLine"
                 android:minHeight="200dp"
                 android:textAlignment="center" />
 

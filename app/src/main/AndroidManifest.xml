@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -19,9 +20,14 @@
             android:name=".views.Main2Activity"
             android:label="@string/title_activity_main2"
             android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".views.SpeechToTextActivity" />
-        <activity android:name=".views.LanguageConverterActivity" />
-        <activity android:name=".views.TextToSpeechActivity"></activity>
+        <activity android:name=".views.SpeechToTextActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name=".views.LanguageConverterActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name=".views.TextToSpeechActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize">
+
+        </activity>
         <activity android:name=".views.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

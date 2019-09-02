@@ -1,15 +1,14 @@
 package com.craft.texttospeech.views;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchUIUtil;
 
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
@@ -18,6 +17,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.inputmethodservice.Keyboard;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -25,7 +25,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -36,7 +35,6 @@ import android.widget.TextView;
 import com.craft.texttospeech.R;
 import com.craft.texttospeech.recievers.NetworkChangeReciever;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
-import com.craft.texttospeech.views.services.TTSService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
@@ -50,10 +48,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ClipboardManager clipboardManager;
     static TextView textViewNoInternet;
   static  ImageView imageViewNoInternet;
-  Switch switchTTSService;
+
     private FloatingActionButton fabDrawer;
     private boolean isDrawerOpen;
-
+    private DrawerLayout drawer;
+    private View.OnClickListener listenerStt, listenerTts,listenerTranslate;
+    private CompoundButton.OnCheckedChangeListener checkedChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +67,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         constraintLayoutLc = findViewById(R.id.constrainLayoutLC);
         imageViewNoInternet = findViewById(R.id.imageViewNoInternet);
         textViewNoInternet = findViewById(R.id.textViewNoInternet);
-        switchTTSService = findViewById(R.id.switchTTSService);
+
         fabDrawer = findViewById(R.id.floatingActionButtonDrawer);
 
-
-
-
-
-        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        registerListener();
+        drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
 
@@ -103,49 +100,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        switchTTSService.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-              askForSystemOverlayPermission();
-                Intent intent =new Intent();
-                intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
 
-                if(isChecked)
-                {
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(intent);
-                            return;
-                        }
-
-                    startService(intent);
-                }
-                else {
-                    stopService(intent);
-                }
-            }
-        });
 
         viewModel =  ViewModelProviders.of(this).get(ViewModelMain.class);
 
-        constraintLayoutTts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),TextToSpeechActivity.class));
-            }
-        });
-        constraintLayoutLc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),LanguageConverterActivity.class));
-            }
-        });
-        constraintLayoutStt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),SpeechToTextActivity.class));
-            }
-        });
+
+
+
+         constraintLayoutTts.setOnClickListener(listenerTts);
+        constraintLayoutLc.setOnClickListener(listenerTranslate);
+        constraintLayoutStt.setOnClickListener(listenerStt);
 
     }
     public void checkNetworkConnection(){
@@ -238,6 +202,91 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        switch (id){
+            case R.id.nav_home:
+                break;
+            case R.id.nav_speech_to_text:
+                listenerStt.onClick(cardViewStt);
+                break;
+            case R.id.nav_text_to_speech:
+                listenerTts.onClick(cardViewTts);
+                break;
+            case R.id.nav_translate:
+                listenerTranslate.onClick(cardViewLc);
+            case R.id.nav_share:
+                break;
+            case R.id.nav_rate_us:
+                break;
+            case R.id.nav_other_apps:
+
+                Uri uri = Uri.parse("market://details?id="+"com.siddhant.craftifywallpapers");
+                Intent i = new Intent(Intent.ACTION_VIEW,uri);
+                startActivity(i);
+                break;
+            case R.id.nav_smartTts:
+                Switch smartTts = findViewById(R.id.switcht);
+                smartTts.setOnCheckedChangeListener(checkedChangeListener);
+//                if(smartTts.isChecked())
+//
+//                checkedChangeListener.onCheckedChanged(smartTts,true);
+//                else
+//                    checkedChangeListener.onCheckedChanged(smartTts,false);
+
+
+
+        }
+        drawer.closeDrawer(GravityCompat.START);
+
+
         return false;
     }
-}
+    private void registerListener(){
+        listenerTts = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),TextToSpeechActivity.class));
+
+            }
+        };
+        listenerTranslate = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),LanguageConverterActivity.class));
+
+            }
+        };
+        listenerStt = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),SpeechToTextActivity.class));
+
+            }
+        };
+        checkedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                askForSystemOverlayPermission();
+                Intent intent =new Intent();
+                intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
+
+                if(isChecked)
+                {
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent);
+                        return;
+                    }
+
+                    startService(intent);
+                }
+                else {
+                    stopService(intent);
+                }
+            }
+            };
+        }
+
+    }
+
+

@@ -243,15 +243,16 @@ public class TextToSpeechActivity extends AppCompatActivity {
                     return;
                 }
                 if(Build.VERSION.SDK_INT>=23){
-                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED){
-                        saveVoiceFabCode();
-                    }
-                    else{
-                        Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
-                        viewModel.askForReadWritePermission(activity);
-
-                    }
-                    return;
+                    viewModel.askForReadWritePermission(activity);
+//                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED){
+//                        saveVoiceFabCode();
+//                    }
+//                    else{
+//                        Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
+//                        viewModel.askForReadWritePermission(activity);
+//
+//                    }
+//                    return;
                 }
                 saveVoiceFabCode();
 

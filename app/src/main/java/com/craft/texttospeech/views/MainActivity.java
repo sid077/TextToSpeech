@@ -14,6 +14,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchUIUtil;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -37,15 +39,18 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.craft.texttospeech.R;
 import com.craft.texttospeech.recievers.NetworkChangeReciever;
 import com.craft.texttospeech.viewmodel.ViewModelMain;
+import com.craft.texttospeech.views.services.TTSService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 
 import java.security.Permissions;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -62,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawer;
     private View.OnClickListener listenerStt, listenerTts,listenerTranslate;
     private CompoundButton.OnCheckedChangeListener checkedChangeListener;
+    private Switch smartTts;
+    private boolean isTTSServiceRunning;
 
 
     @Override
@@ -127,8 +134,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
-                Switch smartTts = findViewById(R.id.switcht);
+                smartTts = findViewById(R.id.switcht);
+                smartTts.setChecked(isTTSServiceRunning);
                 smartTts.setOnCheckedChangeListener(checkedChangeListener);
+
 
             }
 
@@ -152,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                finish();
             }
         });
         AlertDialog alertDialog = builder.create();
@@ -244,10 +254,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case 1:{
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (!Settings.canDrawOverlays(this)) {
-                        //Permission is not available. Display error text.
+                    if(!Settings.canDrawOverlays(getApplicationContext()))
+                    {
                         finish();
                     }
+
 
                 }
 
@@ -282,11 +293,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_smartTts:
 
-//                if(smartTts.isChecked())
-//
-//                checkedChangeListener.onCheckedChanged(smartTts,true);
-//                else
-//                    checkedChangeListener.onCheckedChanged(smartTts,false);
+                if(smartTts.isChecked())
+                    smartTts.setChecked(false);
+                else
+                    smartTts.setChecked(true);
+                break;
+            case R.id.nav_about:
+                new BottomSheetAbout().show(getSupportFragmentManager(),"ABOUT");
+                break;
 
 
 
@@ -328,17 +342,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         checkedChangeListener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                startTttsService(isChecked);
+                if(isChecked)
+                    askForSystemOverlayPermission();
+                    startTttsService(isChecked);
+
+
+
+
+
             }
         };
 
         }
-        private void startTttsService(boolean isChecked){
-            askForSystemOverlayPermission();
-            final Intent intent =new Intent();
-            intent.setComponent(new ComponentName("com.craft.texttospeech","com.craft.texttospeech.views.services.TTSService"));
+        private void startTttsService(boolean isChecked) {
 
-            if(intent.getComponent() == null){
+            final Intent intent = new Intent(getApplicationContext(),TTSService.class);
+            //intent.setComponent(new ComponentName("com.craft.texttospeech", "com.craft.texttospeech.views.services.TTSService"));
+
+            if (intent.getComponent() == null) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());
                 dialog.setTitle("Tap ok to download the service...");
                 dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -357,22 +378,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
             }
 
-            if(isChecked)
-            {
 
+            if (isChecked) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent);
                     return;
                 }
-
                 startService(intent);
-            }
-            else {
+            }else{
                 stopService(intent);
             }
         }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+            isTTSServiceRunning=isMyServiceRunning(TTSService.class);
+
+
     }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 

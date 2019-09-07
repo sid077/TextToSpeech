@@ -23,6 +23,7 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
@@ -122,7 +123,7 @@ public class TTSService extends Service {
             if (text != null)
                 editText.setText(text);
 
-            final RelativeLayout layout = (RelativeLayout) overlayView.findViewById(R.id.relativeTTS);
+            final LinearLayout layout  = (LinearLayout) overlayView.findViewById(R.id.relativeTTS);
             ViewTreeObserver vto = layout.getViewTreeObserver();
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -190,8 +191,8 @@ public class TTSService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
 
-                .setContentText("hey there!")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentText("Smart text to speech service is running...")
+                .setSmallIcon(R.drawable.ic_text_fields_black_24dp)
                 .setContentIntent(pendingIntent)
                 .setColor(Color.BLACK)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

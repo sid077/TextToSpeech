@@ -156,12 +156,13 @@ public class SpeechToTextActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT>=23) {
+
                     {
                         if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)== PackageManager.PERMISSION_GRANTED){
                             fabStartCode();
                         }
                         else {
-                            Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
+//                            Toast.makeText(getApplicationContext(),"Permission not granted...",Toast.LENGTH_LONG).show();
                         }
                     }
                     viewModel.askForRecordMicPermission(activity);
@@ -308,7 +309,7 @@ public class SpeechToTextActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode==3){
-            if(grantResults.length>0&&grantResults[0]== PermissionChecker.PERMISSION_GRANTED){
+            if(grantResults[0]== PermissionChecker.PERMISSION_GRANTED){
                 fabStartCode();
             }
 

@@ -212,6 +212,7 @@ public class TTSService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        textToSpeech = null;
         if(overlayView!=null)
             windowManager.removeView(overlayView);
         Log.i("service","Destroyed");

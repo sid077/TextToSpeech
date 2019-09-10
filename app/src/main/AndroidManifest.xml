@@ -51,9 +51,6 @@
         <service
             android:name=".views.services.TTSService"
             android:exported="true" />
-        <service
-            android:name=".views.services.TTSService2"
-            android:enabled="true" />
     </application>
 
 </manifest>

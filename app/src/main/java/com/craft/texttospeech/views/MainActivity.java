@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProviders;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -344,38 +345,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         private void startTttsService(boolean isChecked) {
 
-            final Intent intent = new Intent(getApplicationContext(),TTSService.class);
-            //intent.setComponent(new ComponentName("com.craft.texttospeech", "com.craft.texttospeech.views.services.TTSService"));
+            final Intent intent = getPackageManager().getLaunchIntentForPackage("com.craft.texttospeechstarter");
 
-            if (intent.getComponent() == null) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());
-                dialog.setTitle("Tap ok to download the service...");
-                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
 
+
+                if(isChecked) {
+                    if (intent == null) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Tap OK to download the service");
+
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                smartTts.setChecked(false);
+
+                            }
+                        });
+                        builder.setMessage("You need to download our secondary app to start this feature, just download and open the downloaded app.");
+                        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.craft.texttospeechstarter")));
+
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     }
-                });
-                dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent1 = new Intent();
+                    else {
 
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent);
+                            return;
+                        }
+                        startActivity(intent);
                     }
-                });
+
+
             }
-
-
-            if (isChecked) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(intent);
-                    return;
+                else {
+                    stopService(new Intent(MainActivity.this,TTSService.class));
                 }
-                startService(intent);
-            }else{
-                stopService(intent);
-            }
+
+
+
         }
 
 
